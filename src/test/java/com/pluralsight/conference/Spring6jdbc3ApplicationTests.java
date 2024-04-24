@@ -2,7 +2,6 @@ package com.pluralsight.conference;
 
 import com.pluralsight.conference.model.Speaker;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -12,24 +11,89 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-class Spring6jdbc3ApplicationTests {
-
+class Spring6jdbc3ApplicationTests
+{
     @Test
-    void testGetSpeakers() {
+    void testGetSpeakers()
+    {
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<List<Speaker>> speakersResponse = restTemplate.exchange(
-                "http://localhost:8080/", HttpMethod.GET,
-                null, new ParameterizedTypeReference<List<Speaker>>() {
+                "http://localhost:8080/speaker", HttpMethod.GET,
+                null, new ParameterizedTypeReference<>()
+                {
                 });
 
-        assertTrue(speakersResponse.getBody() != null, "Body is null");
+        assertNotNull(speakersResponse.getBody(), "Body is null");
 
         List<Speaker> speakers = speakersResponse.getBody();
 
-        for (Speaker speaker : speakers) {
-            System.out.println("Speaker name: " + speaker.getName());
+        for (Speaker speaker : speakers)
+        {
+            System.out.println(speaker.getName() + " " + speaker.getSkill());
         }
+    }
+
+    @Test
+    void testGetSpeaker()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        Speaker speaker = restTemplate.getForObject("http://localhost:8080/speaker/{id}", Speaker.class, 22);
+        assertNotNull(speaker);
+        System.out.println(speaker.getName() + " " + speaker.getSkill());
+    }
+
+    @Test
+    void testCreateSpeaker()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        Speaker speaker = new Speaker();
+        speaker.setName("Bill Russell");
+//        speaker.setSkill("C++");
+
+        speaker = restTemplate.postForObject("http://localhost:8080/speaker", speaker, Speaker.class);
+        assertNotNull(speaker);
+        System.out.println(speaker.getName() + " " + speaker.getSkill());
+    }
+
+    @Test
+    void testUpdateSpeaker()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        Speaker speaker = restTemplate.getForObject("http://localhost:8080/speaker/{id}", Speaker.class, 22);
+        assertNotNull(speaker);
+
+        speaker.setName(speaker.getName() + " Sr.");
+
+        restTemplate.put("http://localhost:8080/speaker", speaker);
+
+        System.out.println(speaker.getName());
+    }
+
+    @Test
+    void testBatchUpdate()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.getForObject("http://localhost:8080/speaker/batch", String.class);
+    }
+
+    @Test
+    void testDeleteSpeaker()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.delete("http://localhost:8080/speaker/{id}", 65);
+    }
+
+    @Test
+    void testException()
+    {
+        RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.getForObject("http://localhost:8080/speaker/test", Speaker.class);
     }
 }

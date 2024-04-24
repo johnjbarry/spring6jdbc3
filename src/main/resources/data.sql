@@ -1,0 +1,1 @@
+INSERT INTO speaker (name, skill) values ('Bryan Hansen', 'Java');
